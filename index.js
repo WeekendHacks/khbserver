@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var cool = require('cool-ascii-faces');
+var users = require('./handlers/users');
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -16,7 +17,11 @@ app.get('/', function(request, response) {
 
 app.get('/cool', function(request, response) {
   response.send(cool());
-})
+});
+
+app.get('/users', function(request, response) {
+  users.getUsers(request, response);
+});
 
 var pg = require('pg');
 
