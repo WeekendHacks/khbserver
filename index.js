@@ -37,9 +37,9 @@ app.post('/request', upload.array(), function(request, response, next) {
   Users.requestLocation(request, response);
 });
 
-app.post('/updatefcmid', upload.array(), function(request, response, next) {
-  console.log('/updatefcmid',request.body);
-  Users.updateFcmId(request, response);
+app.post('/send', upload.array(), function(request, response, next) {
+  console.log('/send',request.body);
+  Users.sendLocation(request, response);
 });
 
 var pg = require('pg');

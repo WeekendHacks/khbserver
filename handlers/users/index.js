@@ -10,16 +10,7 @@ var pg = require('pg');
 var users_table = 'users';
 var gcm = require('node-gcm');
 var respObj = {message: "OK"};
-var messageOptions = {
-                data: { KHB: 'Kaha Hai Bhosadike' },
-                notification: {
-                    title: "Kaha Hai Bhosadike",
-                    sound: 'default',
-                    icon: "ic_launcher"
-                },
-                priority: 'high',
-                delayWhileIdle: false
-            }
+
 
 function getCheckUserSql(phone){
     return 'SELECT * FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
@@ -88,11 +79,11 @@ var sendUsersList = function(response){
     });
 }
 
-function sendMessages(from, rows, response){
+function sendMessages(messageOptions, rows, response){
     // Set up the sender with you API key, prepare your recipients' registration tokens.
     var sender = new gcm.Sender(process.env.FCM_SERVER_API_KEY);
     var regTokens = [rows[0].fcm_id];
-    messageOptions.notification.body =  "From : " + from;
+    
     rows.forEach(function(user, index){
         console.log("user is :: ", user);
         var message = new gcm.Message(messageOptions);
@@ -164,18 +155,59 @@ function requestLocation(request, response){
         if(result.rows.length){
             console.log("FCM iD found");
             console.log("result is ::", result.rows);
-            sendMessages(from, result.rows, response);
+            var messageOptions = {
+                data: { KHB: 'Kaha Hai Bhosadike' },
+                notification: {
+                    title: "Kaha Hai Bhosadike",
+                    sound: 'default',
+                    icon: "ic_launcher"
+                },
+                priority: 'high',
+                delayWhileIdle: false
+            }
+            messageOptions.notification.body =  "From : " + from;
+            sendMessages(messageOptions, result.rows, response);
         }
         else {
             console.log("NO FCM iD found");
             response.status(401).send('Bad Phone');
         }
     });
+}
 
-    
+function sendLocation(request, response){
+    var from = request.body.from;
+    var to = request.body.to;
+    var location = request.body.location;
 
+    executeQuery(getFcmIdAndNameFromPhoneSql(to), null, function(result){
+        if(result.rows.length){
+            console.log("FCM iD found");
+            console.log("result is :: ", result.rows);
+            var messageOptions = {
+                data: { 
+                    KHB: 'Yaha Hu Bhosadike',
+                    location: location
+                 },
+                notification: {
+                    title: "Yaha hu Bhosadike",
+                    sound: 'default',
+                    icon: "ic_launcher"
+                },
+                priority: 'high',
+                delayWhileIdle: false
+            }
+            messageOptions.notification.body =  "From : " + from;
+            sendMessages(messageOptions, result.rows, response);
+        }
+        else {
+            console.log("NO FCM iD found");
+            response.status(401).send('Bad Phone');
+        }
+    });
 }
 
 module.exports.getUsers = getUsers;
 module.exports.registerUser = registerUser;
 module.exports.requestLocation = requestLocation;
+module.exports.sendLocation = sendLocation;
