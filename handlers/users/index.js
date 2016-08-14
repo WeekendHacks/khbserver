@@ -95,6 +95,7 @@ function sendMessages(rows, response){
     var regTokens = [rows[0].fcm_id];
 
     rows.forEach(function(user, index){
+        console.log("user is :: ", user);
         var message = new gcm.Message(messageOptions);
         message.addData('from', user.name);
         var regTokens = [user.fcm_id];
