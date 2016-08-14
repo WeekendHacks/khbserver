@@ -8,9 +8,15 @@
 
 var pg = require('pg');
 var users_table = 'users';
+var gcm = require('node-gcm');
+var respObj = {message: "OK"};
 
 function getCheckUserSql(phone){
     return 'SELECT * FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
+}
+
+function getFcmIdFromPhoneSql(phone){
+    return 'SELECT fcm_id FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
 }
 
 function getUserSql(){
@@ -115,20 +121,43 @@ function getUsers(request, response){
 }
 
 function requestLocation(request, response){
-    var from = request.body.from,
-        to = request.body.to;
+    var from = request.body.from;
+    var to = request.body.to;
 
-    // executeQuery(, null, function(result){
-    //     response.send(result.rows);
-    // });
+    executeQuery(getFcmIdFromPhoneSql(to), null, function(result){
+        if(result.rows.length){
+            console.log("FCM iD found");
+            console.log("result is ::", result);
+            var message = new gcm.Message({
+                data: { KHB: 'Kaha Hai Bhosadike' }
+            });
 
-}
+            // Set up the sender with you API key, prepare your recipients' registration tokens.
+            var sender = new gcm.Sender(process.env.FCM_SERVER_API_KEY);
+            var regTokens = [result.rows[0].fcm_id];
 
-function updateFcmId(request, response){
-    //
+            sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
+                if(err) {
+                    console.log("Sending failed");
+                    console.error(err);
+                    response.status(401).send('Sending failed');
+                }
+                else {
+                    console.log(resp);
+                    response.send(respObj);
+                }
+            });
+        }
+        else {
+            console.log("NO FCM iD found");
+            response.status(401).send('Bad Phone');
+        }
+    });
+
+    
+
 }
 
 module.exports.getUsers = getUsers;
 module.exports.registerUser = registerUser;
 module.exports.requestLocation = requestLocation;
-module.exports.updateFcmId = updateFcmId;
