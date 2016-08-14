@@ -163,7 +163,7 @@ function requestLocation(request, response){
     executeQuery(getFcmIdAndNameFromPhoneSql(to), null, function(result){
         if(result.rows.length){
             console.log("FCM iD found");
-            console.log("result is ::", result);
+            console.log("result is ::", result.rows);
             sendMessages(result.rows, response);
         }
         else {
