@@ -93,7 +93,7 @@ function requestLocation(request, response){
 }
 
 function updateFcmId(request, response){
-
+    //
 }
 
 module.exports.getUsers = getUsers;
