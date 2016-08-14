@@ -130,7 +130,8 @@ function requestLocation(request, response){
             console.log("result is ::", result);
             var message = new gcm.Message({
                 data: { KHB: 'Kaha Hai Bhosadike' },
-                priority: 'high'
+                priority: 'high',
+                delayWhileIdle: false,
             });
 
             // Set up the sender with you API key, prepare your recipients' registration tokens.
