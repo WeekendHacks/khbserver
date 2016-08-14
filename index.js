@@ -27,8 +27,18 @@ app.get('/users', function(request, response) {
 });
 
 app.post('/register', upload.array(), function(request, response, next) {
-  console.log(request.body);
+  console.log('/register', request.body);
   Users.registerUser(request, response);
+});
+
+app.post('/request', upload.array(), function(request, response, next) {
+  console.log('/request',request.body);
+  Users.requestLocation(request, response);
+});
+
+app.post('/updatefcmid', upload.array(), function(request, response, next) {
+  console.log('/updatefcmid',request.body);
+  Users.updateFcmId(request, response);
 });
 
 var pg = require('pg');

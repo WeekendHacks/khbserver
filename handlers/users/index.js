@@ -27,7 +27,9 @@ function pgconn(query, error, success){
         done();
         if (err){ 
             console.error(err); response.send("Error " + err);
-            error();
+            if(error){
+                error();
+            };
         }
         else
             success(result);
@@ -36,50 +38,24 @@ function pgconn(query, error, success){
 }
 
 function isUserRegistered(phone, callback, response){
-    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query(getCheckUserSql(phone), function(err, result) {
-        done();
-        if (err){ 
-            console.error(err); response.send("Error " + err); 
-        }
-        else
-            callback(result.rows)
-        });
-    });
+    pgconn(getCheckUserSql(phone), null, callback);
 }
 
 var sendUsersList = function(response){
-    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query(getUserSql(), function(err, result) {
-        done();
-        if (err){ 
-            console.error(err); response.send("Error " + err); 
-        }
-        else { 
-                // response.writeHead(200, {"Content-Type": "application/json"});
-                response.send(result.rows ); 
-            }
-        });
+    pgconn(getUserSql(), null, function(result){
+        response.send(result.rows);
     });
 }
 
 function registerUser(request, response){
     // TODO: Disallow duplicates
-    console.log(request.body);
     var phone =  request.body.phone,
-        fcm_id = request.bodyfcm_id,
-        name = request.body.name;
+        fcm_id = request.body.fcm_id,
+        name = request.body.name,
+        respObj = {message: "OK"};
 
-    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query(getInsertUserSql(phone, fcm_id, name), function(err, result) {
-        done();
-        if (err){ 
-            console.error(err); response.send("Error " + err); 
-        }
-        else { 
-                response.send("Registered OK!"); 
-            }
-        });
+    pgconn(getInsertUserSql(phone, fcm_id, name), null, function(){
+        response.send(respObj); 
     });
 
 }
@@ -93,7 +69,8 @@ function getUsers(request, response){
         return;
     }
     
-    var onUserValidated = function(rows){
+    var onUserValidated = function(result){
+        var rows = result.rows;
         if(rows.length > 0){
             sendUsersList(response);
         }
@@ -105,5 +82,21 @@ function getUsers(request, response){
     isUserRegistered(phone, onUserValidated, response);
 }
 
+function requestLocation(request, response){
+    var from = request.body.from,
+        to = request.body.to;
+
+    // pgconn(, null, function(result){
+    //     response.send(result.rows);
+    // });
+
+}
+
+function updateFcmId(request, response){
+
+}
+
 module.exports.getUsers = getUsers;
 module.exports.registerUser = registerUser;
+module.exports.requestLocation = requestLocation;
+module.exports.updateFcmId = updateFcmId;
