@@ -10,13 +10,22 @@ var pg = require('pg');
 var users_table = 'users';
 var gcm = require('node-gcm');
 var respObj = {message: "OK"};
+var messageOptions = {
+                data: { KHB: 'Kaha Hai Bhosadike' },
+                notification:{
+                    sound: 'default',
+                    title: 'Kidhar Hai Bose DK'
+                },
+                priority: 'high',
+                delayWhileIdle: false,
+            };
 
 function getCheckUserSql(phone){
     return 'SELECT * FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
 }
 
-function getFcmIdFromPhoneSql(phone){
-    return 'SELECT fcm_id FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
+function getFcmIdAndNameFromPhoneSql(phone){
+    return 'SELECT fcm_id, name FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
 }
 
 function getUserSql(){
@@ -78,6 +87,33 @@ var sendUsersList = function(response){
     });
 }
 
+function sendMessages(rows, response){
+    
+
+    // Set up the sender with you API key, prepare your recipients' registration tokens.
+    var sender = new gcm.Sender(process.env.FCM_SERVER_API_KEY);
+    var regTokens = [rows[0].fcm_id];
+
+    rows.forEach(function(user, index){
+        var message = new gcm.Message(messageOptions);
+        message.addData('from',user.name);
+        var regTokens = [user.fcm_id];
+        sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
+            if(err) {
+                console.log("Sending failed");
+                console.error(err);
+                response.status(401).send('Sending failed');
+            }
+            else {
+                console.log(resp);
+                response.send(respObj);
+            }
+        });
+    });
+
+    
+}
+
 function registerUser(request, response){
     // TODO: Disallow duplicates
     var phone =  request.body.phone,
@@ -128,27 +164,7 @@ function requestLocation(request, response){
         if(result.rows.length){
             console.log("FCM iD found");
             console.log("result is ::", result);
-            var message = new gcm.Message({
-                data: { KHB: 'Kaha Hai Bhosadike' },
-                priority: 'high',
-                delayWhileIdle: false,
-            });
-
-            // Set up the sender with you API key, prepare your recipients' registration tokens.
-            var sender = new gcm.Sender(process.env.FCM_SERVER_API_KEY);
-            var regTokens = [result.rows[0].fcm_id];
-
-            sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
-                if(err) {
-                    console.log("Sending failed");
-                    console.error(err);
-                    response.status(401).send('Sending failed');
-                }
-                else {
-                    console.log(resp);
-                    response.send(respObj);
-                }
-            });
+            sendMessages(result.rows, response);
         }
         else {
             console.log("NO FCM iD found");
