@@ -102,7 +102,7 @@ function sendMessages(from, rows, response){
                 priority: 'high',
                 delayWhileIdle: false
             });
-        message.addData('from', from);
+        // message.addData('from', from);
         console.log("fcm_id is :: ", user.fcm_id);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
