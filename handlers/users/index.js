@@ -92,8 +92,13 @@ function sendMessages(from, rows, response){
 
     rows.forEach(function(user, index){
         console.log("user is :: ", user);
-        var message = new gcm.Message(messageOptions);
-        message.addData('from', from);
+        var message = new gcm.Message({
+                data: { KHB: 'Kaha Hai Bhosadike' },
+                priority: 'high',
+                delayWhileIdle: false
+            });
+        // message.addData('from', from);
+        console.log("fcm_id is :: ", user.fcm_id);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
             if(err) {
