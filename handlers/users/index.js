@@ -21,28 +21,53 @@ function getInsertUserSql(phone, fcm_id, name){
     return "INSERT INTO "+ users_table +" (phone, fcm_id, name) values ('"+ phone + "','" + fcm_id + "','" + name + "');";
 }
 
-function pgconn(query, error, success){
+function getUpdateUserSql(phone, fcm_id, name){
+    return "UPDATE " + users_table +
+           " SET fcm_id = '" + fcm_id + "'," +
+           "name = '" + name +"' WHERE phone = '" + phone + "';"; 
+}
+
+function executeQuery(query, error, success){
     pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query(query, function(err, result) {
-        done();
-        if (err){ 
-            console.error(err); response.send("Error " + err);
-            if(error){
-                error();
-            };
-        }
-        else
-            success(result);
+            done();
+            if (err){ 
+                console.log("Error in sql");
+                console.error(err);
+                if(error){
+                    error();
+                };
+            }
+            else{
+                success(result);
+            }
         });
     });
 }
 
-function isUserRegistered(phone, callback, response){
-    pgconn(getCheckUserSql(phone), null, callback);
+function isUserRegistered(phone, error, success, response){
+    console.log("Checking existing user");
+    executeQuery(getCheckUserSql(phone), null, function(result){
+        if(result.rows.length){
+            console.log("User found");
+            success(result);
+        }
+        else{
+            console.log("NO User found");
+            if(error){
+                error();
+            }
+            else{
+                console.log("Sending Unauthorized user");
+                response.status(401).send('Unauthorized user');
+            }
+        }
+    });
 }
 
 var sendUsersList = function(response){
-    pgconn(getUserSql(), null, function(result){
+    executeQuery(getUserSql(), null, function(result){
+        console.log("Sending user list");
         response.send(result.rows);
     });
 }
@@ -54,9 +79,23 @@ function registerUser(request, response){
         name = request.body.name,
         respObj = {message: "OK"};
 
-    pgconn(getInsertUserSql(phone, fcm_id, name), null, function(){
-        response.send(respObj); 
-    });
+    var newUserRegister = function(){
+                            executeQuery(getInsertUserSql(phone, fcm_id, name), null, function(){
+                                console.log("Sending resp for New user");
+                                response.send(respObj); 
+                            });
+                        }
+    var updateExistingUser = function(result){
+                                console.log("updating existing user");
+                                executeQuery(getUpdateUserSql(phone, fcm_id, name), null, function(){
+                                    console.log("Sending OK response");
+                                    response.send(respObj); 
+                                });
+                             } 
+    isUserRegistered(phone, newUserRegister, updateExistingUser, response);
+    // ..
+    // Else :  
+    
 
 }
 
@@ -70,23 +109,16 @@ function getUsers(request, response){
     }
     
     var onUserValidated = function(result){
-        var rows = result.rows;
-        if(rows.length > 0){
             sendUsersList(response);
-        }
-        else{
-            response.status(401).send('Unauthorized user');
-        }
-    
     }
-    isUserRegistered(phone, onUserValidated, response);
+    isUserRegistered(phone, null, onUserValidated, response);
 }
 
 function requestLocation(request, response){
     var from = request.body.from,
         to = request.body.to;
 
-    // pgconn(, null, function(result){
+    // executeQuery(, null, function(result){
     //     response.send(result.rows);
     // });
 
