@@ -94,10 +94,15 @@ function sendMessages(from, rows, response){
         console.log("user is :: ", user);
         var message = new gcm.Message({
                 data: { KHB: 'Kaha Hai Bhosadike' },
+                notification: {
+                    title: "Hello, World",
+                    icon: "ic_launcher",
+                    body: "This is a notification that will be displayed ASAP."
+                },
                 priority: 'high',
                 delayWhileIdle: false
             });
-        // message.addData('from', from);
+        message.addData('from', from);
         console.log("fcm_id is :: ", user.fcm_id);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
