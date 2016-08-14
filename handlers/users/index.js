@@ -129,7 +129,8 @@ function requestLocation(request, response){
             console.log("FCM iD found");
             console.log("result is ::", result);
             var message = new gcm.Message({
-                data: { KHB: 'Kaha Hai Bhosadike' }
+                data: { KHB: 'Kaha Hai Bhosadike' },
+                priority: 'high'
             });
 
             // Set up the sender with you API key, prepare your recipients' registration tokens.
