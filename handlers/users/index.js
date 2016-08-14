@@ -96,7 +96,7 @@ function sendMessages(rows, response){
 
     rows.forEach(function(user, index){
         var message = new gcm.Message(messageOptions);
-        message.addData('from',user.name);
+        message.addData('from', user.name);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
             if(err) {
@@ -160,7 +160,7 @@ function requestLocation(request, response){
     var from = request.body.from;
     var to = request.body.to;
 
-    executeQuery(getFcmIdFromPhoneSql(to), null, function(result){
+    executeQuery(getFcmIdAndNameFromPhoneSql(to), null, function(result){
         if(result.rows.length){
             console.log("FCM iD found");
             console.log("result is ::", result);
