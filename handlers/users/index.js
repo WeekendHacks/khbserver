@@ -12,9 +12,14 @@ var gcm = require('node-gcm');
 var respObj = {message: "OK"};
 var messageOptions = {
                 data: { KHB: 'Kaha Hai Bhosadike' },
+                notification: {
+                    title: "Kaha Hai Bhosadike",
+                    sound: 'default',
+                    icon: "ic_launcher"
+                },
                 priority: 'high',
                 delayWhileIdle: false
-            };
+            }
 
 function getCheckUserSql(phone){
     return 'SELECT * FROM '+ users_table + ' WHERE phone = ' + "'" + phone + "';";
@@ -84,25 +89,13 @@ var sendUsersList = function(response){
 }
 
 function sendMessages(from, rows, response){
-    
-
     // Set up the sender with you API key, prepare your recipients' registration tokens.
     var sender = new gcm.Sender(process.env.FCM_SERVER_API_KEY);
     var regTokens = [rows[0].fcm_id];
-
+    messageOptions.notification.body =  "From : " + from;
     rows.forEach(function(user, index){
         console.log("user is :: ", user);
-        var message = new gcm.Message({
-                data: { KHB: 'Kaha Hai Bhosadike' },
-                notification: {
-                    title: "Hello, World",
-                    icon: "ic_launcher",
-                    body: "This is a notification that will be displayed ASAP."
-                },
-                priority: 'high',
-                delayWhileIdle: false
-            });
-        // message.addData('from', from);
+        var message = new gcm.Message(messageOptions);
         console.log("fcm_id is :: ", user.fcm_id);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
