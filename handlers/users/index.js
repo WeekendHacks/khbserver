@@ -1,6 +1,8 @@
 /*
 *
 * Author : Parag
+* Should be used as "Users"
+* 
 *
 */
 
@@ -23,10 +25,10 @@ function isUserRegistered(phone, callback, response){
     pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query(getCheckUserSql(phone), function(err, result) {
         done();
-        if (err)
-            { console.error(err); response.send("Error " + err); }
+        if (err){ 
+            console.error(err); response.send("Error " + err); 
+        }
         else
-            // { response.render('pages/db', {results: result.rows} ); }
             callback(result.rows)
         });
     });
@@ -52,7 +54,7 @@ function registerUser(request, response){
     var phone =  request.body.phone,
         fcm_id = request.bodyfcm_id,
         name = request.body.name;
-        
+
     pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query(getInsertUserSql(phone, fcm_id, name), function(err, result) {
         done();
@@ -81,7 +83,7 @@ function getUsers(request, response){
             sendUsersList(response);
         }
         else{
-            res.status(401).send('Unauthorized user');
+            response.status(401).send('Unauthorized user');
         }
     
     }

@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var cool = require('cool-ascii-faces');
-var users = require('./handlers/users');
+var Users = require('./handlers/users');
 var bodyParser = require('body-parser');
 var multer = require('multer'); // v1.0.5
 var upload = multer(); // for parsing multipart/form-data
@@ -23,12 +23,12 @@ app.get('/cool', function(request, response) {
 });
 
 app.get('/users', function(request, response) {
-  users.getUsers(request, response);
+  Users.getUsers(request, response);
 });
 
 app.post('/register', upload.array(), function(request, response, next) {
   console.log(request.body);
-  users.registerUser(request, response);
+  Users.registerUser(request, response);
 });
 
 var pg = require('pg');
