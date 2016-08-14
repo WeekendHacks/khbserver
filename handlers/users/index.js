@@ -21,6 +21,20 @@ function getInsertUserSql(phone, fcm_id, name){
     return "INSERT INTO "+ users_table +" (phone, fcm_id, name) values ('"+ phone + "','" + fcm_id + "','" + name + "';";
 }
 
+function pgconn(query, error, success){
+    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query(query, function(err, result) {
+        done();
+        if (err){ 
+            console.error(err); response.send("Error " + err);
+            error();
+        }
+        else
+            success(result);
+        });
+    });
+}
+
 function isUserRegistered(phone, callback, response){
     pg.connect(process.env.DATABASE_URL, function(err, client, done) {
         client.query(getCheckUserSql(phone), function(err, result) {
@@ -91,3 +105,4 @@ function getUsers(request, response){
 }
 
 module.exports.getUsers = getUsers;
+module.exports.registerUser = registerUser;
