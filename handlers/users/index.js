@@ -12,12 +12,8 @@ var gcm = require('node-gcm');
 var respObj = {message: "OK"};
 var messageOptions = {
                 data: { KHB: 'Kaha Hai Bhosadike' },
-                notification:{
-                    sound: 'default',
-                    title: 'Kidhar Hai Bose DK'
-                },
                 priority: 'high',
-                delayWhileIdle: false,
+                delayWhileIdle: false
             };
 
 function getCheckUserSql(phone){
@@ -87,7 +83,7 @@ var sendUsersList = function(response){
     });
 }
 
-function sendMessages(rows, response){
+function sendMessages(from, rows, response){
     
 
     // Set up the sender with you API key, prepare your recipients' registration tokens.
@@ -97,7 +93,7 @@ function sendMessages(rows, response){
     rows.forEach(function(user, index){
         console.log("user is :: ", user);
         var message = new gcm.Message(messageOptions);
-        message.addData('from', user.name);
+        message.addData('from', from);
         var regTokens = [user.fcm_id];
         sender.send(message, { registrationTokens: regTokens }, function (err, resp) {
             if(err) {
@@ -165,7 +161,7 @@ function requestLocation(request, response){
         if(result.rows.length){
             console.log("FCM iD found");
             console.log("result is ::", result.rows);
-            sendMessages(result.rows, response);
+            sendMessages(from, result.rows, response);
         }
         else {
             console.log("NO FCM iD found");
