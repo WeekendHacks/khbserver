@@ -18,7 +18,7 @@ function getUserSql(){
 }
 
 function getInsertUserSql(phone, fcm_id, name){
-    return "INSERT INTO "+ users_table +" (phone, fcm_id, name) values ('"+ phone + "','" + fcm_id + "','" + name + "';";
+    return "INSERT INTO "+ users_table +" (phone, fcm_id, name) values ('"+ phone + "','" + fcm_id + "','" + name + "');";
 }
 
 function pgconn(query, error, success){
@@ -65,6 +65,7 @@ var sendUsersList = function(response){
 
 function registerUser(request, response){
     // TODO: Disallow duplicates
+    console.log(request.body);
     var phone =  request.body.phone,
         fcm_id = request.bodyfcm_id,
         name = request.body.name;
